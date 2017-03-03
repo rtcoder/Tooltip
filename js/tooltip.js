@@ -3,12 +3,18 @@ $(document).ready(function () {
 });
 (function ($) {
     $.fn.tooltip = function () {
+        this.each(function () {
+            var attr = $(this).attr('title');
+            $(this).data('title', attr);
+            $(this).removeAttr('title');
+        });
+
         this.hover(function () {
             var top = $(this).offset().top;
             var left = $(this).offset().left;
             var width = $(this).width();
             var height = $(this).height();
-            var text = $(this).attr('title');
+            var text = $(this).data('title');
 
             $('#tooltip #tooltipArrow').css('margin', '0px');
             $('#tooltip #tooltipText').empty().text(text);
@@ -19,7 +25,7 @@ $(document).ready(function () {
             var leftPos = left + (width / 2) - (tooltipWidth / 2);
             if (leftPos < 0) {
                 $('#tooltip #tooltipArrow').css({
-                    'margin-left': leftPos -5+ 'px'
+                    'margin-left': leftPos - 5 + 'px'
                 });
                 leftPos = 5;
             }
