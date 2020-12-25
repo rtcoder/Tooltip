@@ -1,50 +1,76 @@
-$(document).ready(function () {
-    $('body').append('<div id="tooltip"><div id="tooltipArrow"></div><div id="tooltipText"></div></div>');
-});
-(function ($) {
-    $.fn.tooltip = function () {
-        this.each(function () {
-            var attr = $(this).attr('title');
-            $(this).data('title', attr);
-            $(this).removeAttr('title');
-        });
+const createTooltipElement = () => {
+    const body = document.body;
 
-        this.hover(function () {
-            var top = $(this).offset().top;
-            var left = $(this).offset().left;
-            var width = $(this).width();
-            var height = $(this).height();
-            var text = $(this).data('title');
+    const tooltipDiv = document.createElement('div');
+    tooltipDiv.setAttribute('id', 'tooltip');
 
-            $('#tooltip #tooltipArrow').css('margin', '0px');
-            $('#tooltip #tooltipText').empty().text(text);
-            $('#tooltip').show();
+    const tooltipArrowDiv = document.createElement('div');
+    tooltipArrowDiv.setAttribute('id', 'tooltipArrow');
 
-            var tooltipWidth = $('#tooltip').width();
+    const tooltipTextDiv = document.createElement('div');
+    tooltipTextDiv.setAttribute('id', 'tooltipText');
 
-            var leftPos = left + (width / 2) - (tooltipWidth / 2);
-            if (leftPos < 0) {
-                $('#tooltip #tooltipArrow').css({
-                    'margin-left': leftPos - 5 + 'px'
-                });
-                leftPos = 5;
-            }
-            if (leftPos + tooltipWidth > $(window).width()) {
-                $('#tooltip #tooltipArrow').css({
-                    'margin-left': (leftPos + tooltipWidth - $(window).width()) + 15 + 'px'
-                });
-                leftPos = $(window).width() - tooltipWidth - 15;
-            }
+    tooltipDiv.appendChild(tooltipArrowDiv);
+    tooltipDiv.appendChild(tooltipTextDiv);
 
-            $('#tooltip').css({
-                'top': top + height + 10,
-                'left': leftPos
-            });
-        }, function () {
-            $('#tooltip #tooltipText').empty();
-            $('#tooltip').hide();
-            $('#tooltip #tooltipArrow').css('margin', '0px');
-        });
-        return this;
-    };
-})(jQuery);
+    body.appendChild(tooltipDiv);
+}
+const getTooltipDiv = () => document.getElementById('tooltip');
+const getTooltipArrowDiv = () => document.getElementById('tooltipArrow');
+const getTooltipTextDiv = () => document.getElementById('tooltipText');
+
+const displayTooltip = (element, content) => {
+    content = content.replace(/(?:\r\n|\r|\n)/g, '<br>');
+    return () => {
+        const TooltipTextDiv = getTooltipTextDiv();
+        const TooltipArrowDiv = getTooltipArrowDiv();
+        const TooltipDiv = getTooltipDiv();
+        TooltipTextDiv.innerHTML = content;
+        TooltipArrowDiv.style.cssText = 'margin:0';
+        TooltipDiv.classList.add('visible');
+
+        const {top, left, width, height} = element.getBoundingClientRect();
+        const windowWidth = window.innerWidth;
+        const tooltipWidth = TooltipDiv.getBoundingClientRect().width;
+        let realTop = top + window.pageYOffset
+
+        let leftPos = left + (width / 2) - (tooltipWidth / 2);
+        if (leftPos < 0) {
+            TooltipArrowDiv.style.cssText = `margin-left: ${leftPos - 5}px`;
+            leftPos = 5;
+        }
+        if (leftPos + tooltipWidth > windowWidth) {
+            TooltipArrowDiv.style.cssText = `margin-left: ${(leftPos + tooltipWidth - windowWidth) + 15}px`;
+            leftPos = windowWidth - tooltipWidth - 15;
+        }
+
+        TooltipDiv.style.cssText = `top: ${realTop + height + 10}px; left: ${leftPos}px`
+    }
+}
+
+const hideTooltip = () => {
+    const TooltipTextDiv = getTooltipTextDiv();
+    const TooltipArrowDiv = getTooltipArrowDiv();
+    const TooltipDiv = getTooltipDiv();
+    TooltipTextDiv.innerHTML = '';
+    TooltipDiv.classList.remove('visible');
+    TooltipArrowDiv.style.cssText = 'margin:0';
+}
+
+(function () {
+    createTooltipElement();
+
+    document.querySelectorAll('[data-tooltip]').forEach(element => {
+        const titleAttr = element.getAttribute('title');
+        const titleAttrFromTooltip = element.getAttribute('data-tooltip');
+        let content = titleAttrFromTooltip || titleAttr
+
+        if (!content) {
+            console.warn(element);
+            console.warn('Warning: above element has empty "title" and "data-tooltip" attributes');
+        } else {
+            element.addEventListener('mouseenter', displayTooltip(element, content));
+            element.addEventListener('mouseleave', hideTooltip)
+        }
+    })
+})();
