@@ -32,7 +32,8 @@ const displayTooltip = (element, content) => {
         const {top, left, width, height} = element.getBoundingClientRect();
         const windowWidth = window.innerWidth;
         const tooltipWidth = TooltipDiv.getBoundingClientRect().width;
-        let realTop = top + window.pageYOffset
+        const tooltipHeight = TooltipDiv.getBoundingClientRect().height;
+        let realTop = top + window.pageYOffset;
 
         let leftPos = left + (width / 2) - (tooltipWidth / 2);
         if (leftPos < 0) {
@@ -44,7 +45,13 @@ const displayTooltip = (element, content) => {
             leftPos = windowWidth - tooltipWidth - 15;
         }
 
-        TooltipDiv.style.cssText = `top: ${realTop + height + 10}px; left: ${leftPos}px`
+        if ((realTop - tooltipHeight - 10) >= 0) {
+            TooltipDiv.style.cssText = `top: ${realTop - tooltipHeight - 10}px; left: ${leftPos}px`;
+            TooltipArrowDiv.style.cssText += `bottom: -5px;`
+        } else {
+            TooltipDiv.style.cssText = `top: ${realTop + height + 10}px; left: ${leftPos}px`;
+            TooltipArrowDiv.style.cssText += `top: -5px;`
+        }
     }
 }
 
@@ -63,14 +70,14 @@ const hideTooltip = () => {
     document.querySelectorAll('[data-tooltip]').forEach(element => {
         const titleAttr = element.getAttribute('title');
         const titleAttrFromTooltip = element.getAttribute('data-tooltip');
-        let content = titleAttrFromTooltip || titleAttr
+        let content = titleAttrFromTooltip || titleAttr;
 
         if (!content) {
             console.warn(element);
             console.warn('Warning: above element has empty "title" and "data-tooltip" attributes');
         } else {
             element.addEventListener('mouseenter', displayTooltip(element, content));
-            element.addEventListener('mouseleave', hideTooltip)
+            element.addEventListener('mouseleave', hideTooltip);
         }
     })
 })();

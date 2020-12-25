@@ -5,10 +5,11 @@
     background: #000000;
     color: #eee;
     font-size: 12px;
-    font-weight: bold;
     padding: 10px;
     box-sizing: border-box;
     z-index: 9999999;
+    opacity: 0;
+    border-radius: 5px;
 }
 
 #tooltip.visible {
@@ -20,7 +21,6 @@
     height: 10px;
     background: inherit;
     position: absolute;
-    top: -5px;
     left: 50%;
     transform: translate(-50%, 0) rotate(45deg);
 }
